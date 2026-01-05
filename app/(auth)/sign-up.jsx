@@ -2,6 +2,7 @@ import * as React from 'react'
 import { Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { useSignUp } from '@clerk/clerk-expo'
 import { Link, useRouter } from 'expo-router'
+import { Alert } from 'react-native'
 
 
 export default function SignUpScreen() {
@@ -41,35 +42,37 @@ try {
 
 }
 
-
 // Handle submission of verification form
+// Add this import at the top
 const onVerifyPress = async () => {
-if (!isLoaded) return
+  if (!isLoaded) return;
 
+  try {
+    // Use the code the user provided to attempt verification
+    const signUpAttempt = await signUp.attemptEmailAddressVerification({ code });
 
-try {
-  // Use the code the user provided to attempt verification
-  const signUpAttempt = await signUp.attemptEmailAddressVerification({
-    code,
-  })
+    if (signUpAttempt.status === 'complete') {
+      await setActive({ session: signUpAttempt.createdSessionId });
 
-  // If verification was completed, set the session to active
-  // and redirect the user
-  if (signUpAttempt.status === 'complete') {
-    await setActive({ session: signUpAttempt.createdSessionId })
-    router.replace('/')
-  } else {
-    // If the status is not complete, check why. User may need to
-    // complete further steps.
-    console.error(JSON.stringify(signUpAttempt, null, 2))
+      // Show success message
+      Alert.alert('Success', 'Sign up successful! You are now logged in.');
+
+      router.replace('/');
+    } else {
+      console.error(JSON.stringify(signUpAttempt, null, 2));
+    }
+  } catch (err) {
+    const isAlreadySignedIn = err?.errors?.some(e => e.code === 'session_exists');
+
+    if (isAlreadySignedIn) {
+      Alert.alert('Success', 'You are already signed in.');
+      router.replace('/');
+    } else {
+      console.error(JSON.stringify(err, null, 2));
+      Alert.alert('Error', 'Verification failed. Please try again.');
+    }
   }
-} catch (err) {
-  // See https://clerk.com/docs/custom-flows/error-handling
-  // for more info on error handling
-  console.error(JSON.stringify(err, null, 2))
-}
-
-}
+};
 
 
 if (pendingVerification) {

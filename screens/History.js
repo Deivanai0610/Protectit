@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, RefreshControl, StyleSheet, Alert } from 'react-native';
 import axios from 'axios';
+import { useAuth } from '@clerk/clerk-expo';  // Added for auth
 
-const API_BASE = 'https://protectit-backend-git-main-devis-projects-d516985b.vercel.app';  // Replace with your Vercel backend URL
+const API_BASE = 'https://protectit-backend-oz9lujuup-devis-projects-d516985b.vercel.app/';  // Your updated Vercel URL
 
 export default function History() {
   const [history, setHistory] = useState([]);
   const [refreshing, setRefreshing] = useState(false);
+  const { getToken } = useAuth();  // Added to get auth token
 
   useEffect(() => {
     fetchHistory();
@@ -14,18 +16,23 @@ export default function History() {
 
   const fetchHistory = async () => {
     try {
-      const { data } = await axios.get(`${API_BASE}/api/history`);
+      const token = await getToken();  // Get the JWT token
+      const { data } = await axios.get(`${API_BASE}/api/history`, {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Send token in header
+        },
+      });
+      console.log('Fetched data:', data);
       setHistory(data);
     } catch (error) {
-      Alert.alert('Error', 'Failed to load history. Check backend connection.');
-      console.error(error);
+      Alert.alert('Error', 'Failed to load history. Please log in.');
+      console.error('Fetch error:', error.response);  // More details for debugging
     }
   };
 
   const onRefresh = () => {
     setRefreshing(true);
-    fetchHistory();
-    setRefreshing(false);
+    fetchHistory().finally(() => setRefreshing(false));
   };
 
   const renderItem = ({ item }) => (
