@@ -4,7 +4,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import axios from 'axios';
 
 const GEMINI_API_KEY = 'AIzaSyAXZGFe_2aru6DdssjVE96Rz9ksHrEpBpg'; // Replace with your key from https://aistudio.google.com/app/apikey
-const API_BASE = 'https://protectit-backend-git-main-devis-projects-d516985b.vercel.app'; // Replace with your Vercel backend URL
+const API_BASE =' https://protectit-backend-devis-projects-d516985b.vercel.app/'
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
