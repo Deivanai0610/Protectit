@@ -3,7 +3,8 @@ import { View, Text, FlatList, RefreshControl, StyleSheet, Alert } from 'react-n
 import axios from 'axios';
 import { useAuth } from '@clerk/clerk-expo';  // Added for auth
 
-const API_BASE = 'https://protectit-backend-oz9lujuup-devis-projects-d516985b.vercel.app/';  // Your updated Vercel URL
+const API_BASE = 'https://protectit-backend-deivanai0610-devis-projects-d516985b.vercel.app'
+
 
 export default function History() {
   const [history, setHistory] = useState([]);
