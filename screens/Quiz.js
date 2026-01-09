@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useUser } from '@clerk/clerk-expo';
 
 const questions = [
+
   { 
     question: 'What is phishing?', 
     options: ['Fake emails/websites to steal data', 'A fishing hobby', 'Secure login method', 'App update process'], 
@@ -63,9 +65,12 @@ const questions = [
     correct: 1, 
     explanation: 'Reporting helps stop the attack and protects others; never engage with suspicious content.' 
   }
+
 ];
 
 export default function Quiz() {
+  const { isLoaded, user } = useUser();
+
   const [current, setCurrent] = useState(0);
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
@@ -101,7 +106,6 @@ export default function Quiz() {
     const isCorrect = index === questions[current].correct;
     if (isCorrect) setScore(score + 1);
 
-    // Show feedback and explanation
     const feedbackTitle = isCorrect ? 'Correct!' : 'Incorrect!';
     const feedbackMessage = isCorrect ? 'Good job!' : questions[current].explanation;
     Alert.alert(
@@ -116,9 +120,8 @@ export default function Quiz() {
     if (current < questions.length - 1) {
       setCurrent(current + 1);
     } else {
-      setShowResult(true);
-      // Final score adjustment if last answer was correct
       const finalScore = score + (selectedAnswer === questions[current].correct ? 1 : 0);
+      setShowResult(true);
       saveHighScore(finalScore);
     }
   };
@@ -135,6 +138,13 @@ export default function Quiz() {
   if (showResult) {
     return (
       <View style={styles.container}>
+        {/* Welcome Message */}
+        {isLoaded && user && (
+          <Text style={styles.welcome}>
+            Welcome back, {user.primaryEmailAddress?.emailAddress || 'User'}! 👋
+          </Text>
+        )}
+
         <Text style={styles.title}>Quiz Complete!</Text>
         <Text style={styles.score}>Your Score: {score}/{questions.length}</Text>
         <Text style={styles.highScore}>High Score: {highScore}/{questions.length}</Text>
@@ -150,6 +160,13 @@ export default function Quiz() {
 
   return (
     <View style={styles.container}>
+      {/* Welcome Message */}
+      {isLoaded && user && (
+        <Text style={styles.welcome}>
+          Welcome back, {user.primaryEmailAddress?.emailAddress || 'User'}! 👋
+        </Text>
+      )}
+
       <Text style={styles.progress}>Question {current + 1} / {questions.length}</Text>
       <Text style={styles.question}>{question.question}</Text>
       <View style={styles.options}>
@@ -180,6 +197,27 @@ export default function Quiz() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#f8f9fa', justifyContent: 'center' },
+  welcome: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#007AFF',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  signOutButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#FF3B30',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    zIndex: 1,
+  },
+  signOutText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
   title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', color: '#007AFF', marginBottom: 20 },
   progress: { fontSize: 16, textAlign: 'center', marginBottom: 20, color: '#666' },
   question: { fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#333' },

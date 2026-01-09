@@ -1,123 +1,109 @@
-import * as React from 'react'
-import { Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { useSignUp } from '@clerk/clerk-expo'
-import { Link, useRouter } from 'expo-router'
-import { Alert } from 'react-native'
-
+import * as React from 'react';
+import { Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
+import { useSignUp } from '@clerk/clerk-expo';
+import { useNavigation } from '@react-navigation/native';  // ← React Navigation
 
 export default function SignUpScreen() {
-const { isLoaded, signUp, setActive } = useSignUp()
-const router = useRouter()
+  const { isLoaded, signUp, setActive } = useSignUp();
+  const navigation = useNavigation();
 
+  const [emailAddress, setEmailAddress] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [pendingVerification, setPendingVerification] = React.useState(false);
+  const [code, setCode] = React.useState('');
 
-const [emailAddress, setEmailAddress] = React.useState('')
-const [password, setPassword] = React.useState('')
-const [pendingVerification, setPendingVerification] = React.useState(false)
-const [code, setCode] = React.useState('')
+  const onSignUpPress = async () => {
+    if (!isLoaded) return;
 
-
-// Handle submission of sign-up form
-const onSignUpPress = async () => {
-if (!isLoaded) return
-
-
-// Start sign-up process using email and password provided
-try {
-  await signUp.create({
-    emailAddress,
-    password,
-  })
-
-  // Send user an email with verification code
-  await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
-
-  // Set 'pendingVerification' to true to display second form
-  // and capture OTP code
-  setPendingVerification(true)
-} catch (err) {
-  // See https://clerk.com/docs/custom-flows/error-handling
-  // for more info on error handling
-  console.error(JSON.stringify(err, null, 2))
-}
-
-}
-
-// Handle submission of verification form
-// Add this import at the top
-const onVerifyPress = async () => {
-  if (!isLoaded) return;
-
-  try {
-    // Use the code the user provided to attempt verification
-    const signUpAttempt = await signUp.attemptEmailAddressVerification({ code });
-
-    if (signUpAttempt.status === 'complete') {
-      await setActive({ session: signUpAttempt.createdSessionId });
-
-      // Show success message
-      Alert.alert('Success', 'Sign up successful! You are now logged in.');
-
-      router.replace('/');
-    } else {
-      console.error(JSON.stringify(signUpAttempt, null, 2));
-    }
-  } catch (err) {
-    const isAlreadySignedIn = err?.errors?.some(e => e.code === 'session_exists');
-
-    if (isAlreadySignedIn) {
-      Alert.alert('Success', 'You are already signed in.');
-      router.replace('/');
-    } else {
+    try {
+      await signUp.create({ emailAddress, password });
+      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+      setPendingVerification(true);
+    } catch (err) {
       console.error(JSON.stringify(err, null, 2));
-      Alert.alert('Error', 'Verification failed. Please try again.');
+      Alert.alert('Error', 'Sign up failed. Please try again.');
     }
+  };
+
+  const onVerifyPress = async () => {
+    if (!isLoaded) return;
+
+    try {
+      const completeSignUp = await signUp.attemptEmailAddressVerification({ code });
+
+      if (completeSignUp.status === 'complete') {
+        await setActive({ session: completeSignUp.createdSessionId });
+        Alert.alert('Success', 'Account created! You are now signed in.');
+        // No router.replace — parent will update
+      } else {
+        console.error(JSON.stringify(completeSignUp, null, 2));
+      }
+    } catch (err) {
+      const isAlreadySignedIn = err?.errors?.some(e => e.code === 'session_exists');
+      if (isAlreadySignedIn) {
+        Alert.alert('Success', 'You are already signed in.');
+      } else {
+        console.error(JSON.stringify(err, null, 2));
+        Alert.alert('Error', 'Verification failed.');
+      }
+    }
+  };
+
+  if (pendingVerification) {
+    return (
+      <View style={{ padding: 20 }}>
+        <Text style={{ fontSize: 20, marginBottom: 20 }}>Verify your email</Text>
+        <TextInput
+          value={code}
+          placeholder="Enter verification code"
+          onChangeText={setCode}
+          keyboardType="number-pad"
+          style={{ borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 20, borderRadius: 8 }}
+        />
+        <TouchableOpacity
+          onPress={onVerifyPress}
+          style={{ backgroundColor: '#007AFF', padding: 15, borderRadius: 8, alignItems: 'center' }}
+        >
+          <Text style={{ color: 'white', fontWeight: 'bold' }}>Verify</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
-};
 
+  return (
+    <View style={{ padding: 20 }}>
+      <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 20 }}>Sign Up</Text>
 
-if (pendingVerification) {
-return (
-<>
-<Text>Verify your email</Text>
-<TextInput
-value={code}
-placeholder="Enter your verification code"
-onChangeText={(code) => setCode(code)}
-/>
-<TouchableOpacity onPress={onVerifyPress}>
-<Text>Verify</Text>
-</TouchableOpacity>
-</>
-)
-}
+      <TextInput
+        autoCapitalize="none"
+        value={emailAddress}
+        placeholder="Email address"
+        onChangeText={setEmailAddress}
+        style={{ borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10, borderRadius: 8 }}
+        keyboardType="email-address"
+      />
 
+      <TextInput
+        value={password}
+        placeholder="Password"
+        secureTextEntry={true}
+        onChangeText={setPassword}
+        style={{ borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 20, borderRadius: 8 }}
+      />
 
-return (
-<View>
-<>
-<Text>Sign up</Text>
-<TextInput
-autoCapitalize="none"
-value={emailAddress}
-placeholder="Enter email"
-onChangeText={(email) => setEmailAddress(email)}
-/>
-<TextInput
-value={password}
-placeholder="Enter password"
-secureTextEntry={true}
-onChangeText={(password) => setPassword(password)}
-/>
-<TouchableOpacity onPress={onSignUpPress}>
-<Text>Continue</Text>
-</TouchableOpacity>
-<View style={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
-<Text>Already have an account?</Text>
-<Link href="/sign-in">
-<Text>Sign in</Text>
-</Link>
-</View>
-</>
-</View>
-)
+      <TouchableOpacity
+        onPress={onSignUpPress}
+        style={{ backgroundColor: '#007AFF', padding: 15, borderRadius: 8, alignItems: 'center' }}
+      >
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>Continue</Text>
+      </TouchableOpacity>
+
+      <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 20 }}>
+        <Text>Already have an account? </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('SignIn')}>
+          <Text style={{ color: '#007AFF', fontWeight: 'bold' }}>Sign In</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 }

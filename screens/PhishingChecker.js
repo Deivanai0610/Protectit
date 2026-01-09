@@ -1,14 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ScrollView } from 'react-native';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import axios from 'axios';
+import { useUser, useClerk } from '@clerk/clerk-expo';  // Added useClerk for sign out
 
-const GEMINI_API_KEY = 'AIzaSyAXZGFe_2aru6DdssjVE96Rz9ksHrEpBpg'; // Replace with your key from https://aistudio.google.com/app/apikey
-const API_BASE =' https://protectit-backend-devis-projects-d516985b.vercel.app/'
+const GEMINI_API_KEY = 'AIzaSyAXZGFe_2aru6DdssjVE96Rz9ksHrEpBpg';
+const API_BASE = 'https://protectit-backend-devis-projects-d516985b.vercel.app/';  // Fixed
 
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 export default function PhishingChecker() {
+  const { isLoaded, user } = useUser();
+  const { signOut } = useClerk();  // For sign out button
+
   const [url, setUrl] = useState('');
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,7 +19,7 @@ export default function PhishingChecker() {
   const checkPhishing = async () => {
     if (!url.trim()) return Alert.alert('Error', 'Please enter a URL');
     setLoading(true);
-    setResult(''); // Clear previous result
+    setResult('');
 
     try {
       const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
@@ -28,39 +31,24 @@ export default function PhishingChecker() {
       const status = lines[0].trim() === 'PHISHING' ? 'Phishing Likely' : 'Safe';
       const explanation = lines.slice(1).join(' ').trim();
       setResult(`${status}\n\nExplanation: ${explanation}`);
-    } 
-    // Save to history (non-blocking if backend fails)
-    /* 
-    try {
-      await axios.post(`${API_BASE}/api/history`, { link: url, result: status });
-    } catch (backendError) {
-      console.warn('History save failed:', backendError);
-    }
-    Alert.alert('Success', 'Link analyzed!');
-    */
-    catch (error) {
-      Alert.alert('Error', 'Failed to analyze. Check API key or internet connection.');
-      console.error(error);
-    }
-    setLoading(false);
-  };
-
-  const saveToHistory = async (url, result, ai_analysis) => {
-    try {
-      await fetch('http://localhost:3000/api/history', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, result, ai_analysis }),
-      });
     } catch (error) {
-      console.error('Error saving:', error);
+      Alert.alert('Error', 'Failed to analyze. Check internet or API key.');
+      console.error(error);
     }
     setLoading(false);
   };
 
   return (
     <ScrollView style={styles.container}>
+      {/* Welcome Message */}
+      {isLoaded && user && (
+        <Text style={styles.welcome}>
+          Welcome back, {user.primaryEmailAddress?.emailAddress || 'User'}! 👋
+        </Text>
+      )}
+
       <Text style={styles.title}>Paste a URL to Check for Phishing</Text>
+
       <TextInput
         style={styles.input}
         placeholder="e.g., https://example.com"
@@ -68,13 +56,18 @@ export default function PhishingChecker() {
         onChangeText={setUrl}
         multiline
         editable={!loading}
+        autoCapitalize="none"
+        keyboardType="url"
       />
+
       <TouchableOpacity
         style={[styles.button, loading && styles.disabled]}
         onPress={checkPhishing}
         disabled={loading}
       >
-        <Text style={styles.buttonText}>{loading ? 'Analyzing...' : 'Check Link'}</Text>
+        <Text style={styles.buttonText}>
+          {loading ? 'Analyzing...' : 'Check Link'}
+        </Text>
       </TouchableOpacity>
 
       {result ? (
@@ -96,6 +89,27 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     backgroundColor: '#f8f9fa',
+  },
+  welcome: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#007AFF',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  signOutButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#FF3B30',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    zIndex: 1,
+  },
+  signOutText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
   title: {
     fontSize: 24,
@@ -146,7 +160,7 @@ const styles = StyleSheet.create({
   },
   result: {
     fontSize: 16,
-    lineHeight: 22,
+    lineHeight: 24,
     color: '#333',
   },
 });
