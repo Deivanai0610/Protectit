@@ -29,9 +29,6 @@
     "plugins": [
       "expo-router",
       "expo-web-browser"
-    ],
-    "updates": {
-      "enabled": false
-    }
+    ]
   }
 }
