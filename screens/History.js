@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useUser, useAuth, useClerk } from '@clerk/clerk-expo';
 
 const API_BASE = 'https://protectit-backend-devis-projects-d516985b.vercel.app';
+`${API_BASE}/api/history`
 
 export default function History() {
   const [history, setHistory] = useState([]);
