@@ -17,3 +17,5 @@ Thumbs.db
 
 .env
 .expo/
+.vercel
+.env*.local
