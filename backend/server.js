@@ -2,8 +2,10 @@ import express from "express";
 import dotenv from "dotenv";
 import postgres from "postgres";
 import { initDB } from "./config/db.js";
-
+import emailRoute from './routes/emailRoute.js';
 import historyRoute from "./routes/historyRoute.js";
+
+app.use('/api/send-score-email', emailRoute);
 
 dotenv.config();
 
