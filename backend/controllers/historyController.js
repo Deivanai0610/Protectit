@@ -5,7 +5,9 @@ async function getUserIdFromToken(authHeader) {
   if (!authHeader) return null;
   const token = authHeader.replace("Bearer ", "");
   try {
-    const jwtPayload = await verifyToken(token);
+    const jwtPayload = await verifyToken(token, {
+      jwtKey: process.env.CLERK_JWT_KEY,
+    });
     return jwtPayload.sub; // User ID
   } catch (error) {
     console.error("Token verification failed:", error);
