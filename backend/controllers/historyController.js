@@ -1,13 +1,14 @@
 import { sql } from "../config/db.js";
-import { verifyToken } from "@clerk/clerk-sdk-node";  // import Clerk's verifyToken
+import { verifyToken } from "@clerk/clerk-sdk-node";
 
 async function getUserIdFromToken(authHeader) {
   if (!authHeader) return null;
   const token = authHeader.replace("Bearer ", "");
   try {
-    const jwtPayload = await verifyToken(token);  // verify token with Clerk SDK
-    return jwtPayload.sub; // user ID is in sub claim
-  } catch {
+    const jwtPayload = await verifyToken(token);
+    return jwtPayload.sub; // User ID
+  } catch (error) {
+    console.error("Token verification failed:", error);
     return null;
   }
 }
@@ -22,7 +23,7 @@ export async function getHistory(req, res) {
     `;
     res.status(200).json(historyvalue);
   } catch (error) {
-    console.error("Error getting history", error);
+    console.error("Error getting history:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }
@@ -40,16 +41,16 @@ export async function createLinkHistory(req, res) {
     `;
     res.status(201).json(historyvalue[0]);
   } catch (error) {
-    console.error("Error creating history", error);
+    console.error("Error creating history:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 }
 
-export async function deleteLinkHistory(req,res) {
-  try{
+export async function deleteLinkHistory(req, res) {
+  try {
     const { id } = req.params;
     if (isNaN(parseInt(id))) {
-      return res.status(400).json({message: "Invalid link ID provided"})
+      return res.status(400).json({ message: "Invalid link ID provided" });
     }
 
     const result = await sql`
@@ -57,12 +58,12 @@ export async function deleteLinkHistory(req,res) {
     `;
 
     if (result.length === 0) {
-      return res.status(404).json({message: "History not found"});
+      return res.status(404).json({ message: "History not found" });
     }
 
-    res.status(200).json({ message: "History deleted successfully"});
+    res.status(200).json({ message: "History deleted successfully" });
   } catch (error) {
-    console.error("Error deleting the history", error);
-    res.status(500).json({message:"Internal server error"});
+    console.error("Error deleting history:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 }
