@@ -31,7 +31,17 @@
       "expo-web-browser"
     ],
     "updates": {
-      "enabled": false
+      "enabled": false,
+      "url": "https://u.expo.dev/c16d2d0e-f223-48d1-b38d-2a9d9b546222"
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c16d2d0e-f223-48d1-b38d-2a9d9b546222"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
     }
   }
 }

@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ScrollView } from 'react-native';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { useUser, useClerk } from '@clerk/clerk-expo';
+import { useUser, useClerk } from '@clerk/clerk-expo';  // Added useClerk for sign out
 
 const GEMINI_API_KEY = 'AIzaSyAXZGFe_2aru6DdssjVE96Rz9ksHrEpBpg';
+const API_BASE = 'https://protectit-backend-devis-projects-d516985b.vercel.app/';  // Fixed
+
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
 
 export default function PhishingChecker() {
   const { isLoaded, user } = useUser();
-  const { signOut } = useClerk();
+  const { signOut } = useClerk();  // For sign out button
 
   const [url, setUrl] = useState('');
   const [result, setResult] = useState('');
@@ -21,7 +23,7 @@ export default function PhishingChecker() {
 
     try {
       const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
-      const prompt = `Analyze this URL for phishing risk: ${url}. Respond with "SAFE" or "PHISHING" on first line, followed by a short explanation.`;
+      const prompt = `Analyze this URL for phishing risk: ${url}. Check for suspicious domains, lack of HTTPS, URL shorteners, or common phishing tactics. Respond with "SAFE" or "PHISHING" on the first line, followed by a 1-2 sentence explanation.`;
 
       const response = await model.generateContent(prompt);
       const analysis = await response.response.text();
@@ -31,12 +33,14 @@ export default function PhishingChecker() {
       setResult(`${status}\n\nExplanation: ${explanation}`);
     } catch (error) {
       Alert.alert('Error', 'Failed to analyze. Check internet or API key.');
+      console.error(error);
     }
     setLoading(false);
   };
 
   return (
     <ScrollView style={styles.container}>
+      {/* Welcome Message */}
       {isLoaded && user && (
         <Text style={styles.welcome}>
           Welcome back, {user.primaryEmailAddress?.emailAddress || 'User'}! 👋
@@ -61,11 +65,18 @@ export default function PhishingChecker() {
         onPress={checkPhishing}
         disabled={loading}
       >
-        <Text style={styles.buttonText}>{loading ? 'Analyzing...' : 'Check Link'}</Text>
+        <Text style={styles.buttonText}>
+          {loading ? 'Analyzing...' : 'Check Link'}
+        </Text>
       </TouchableOpacity>
 
       {result ? (
-        <View style={[styles.resultCard, { backgroundColor: result.startsWith('Safe') ? '#E8F5E8' : '#FFE8E8' }]}>
+        <View
+          style={[
+            styles.resultCard,
+            { backgroundColor: result.startsWith('Safe') ? '#E8F5E8' : '#FFE8E8' },
+          ]}
+        >
           <Text style={styles.result}>{result}</Text>
         </View>
       ) : null}
@@ -74,9 +85,39 @@ export default function PhishingChecker() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#f8f9fa' },
-  welcome: { fontSize: 22, fontWeight: 'bold', color: '#007AFF', textAlign: 'center', marginBottom: 10 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#007AFF' },
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f8f9fa',
+  },
+  welcome: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#007AFF',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  signOutButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#FF3B30',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    zIndex: 1,
+  },
+  signOutText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    color: '#007AFF',
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
@@ -100,8 +141,14 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
-  disabled: { backgroundColor: '#ccc' },
-  buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  disabled: {
+    backgroundColor: '#ccc',
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
   resultCard: {
     padding: 15,
     borderRadius: 10,
@@ -111,5 +158,9 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 3,
   },
-  result: { fontSize: 16, lineHeight: 24, color: '#333' },
+  result: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#333',
+  },
 });

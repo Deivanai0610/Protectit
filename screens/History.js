@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, RefreshControl, StyleSheet, Alert } from 'react-native';
+import { View, Text, FlatList, RefreshControl, StyleSheet, Alert, TouchableOpacity } from 'react-native';
 import axios from 'axios';
-import { useUser, useAuth, useClerk } from '@clerk/clerk-expo';
+import { useUser, useAuth, useClerk } from '@clerk/clerk-expo';  // Added useClerk
 
 const API_BASE = 'https://protectit-backend-devis-projects-d516985b.vercel.app';
+`${API_BASE}/api/history`
 
 export default function History() {
   const [history, setHistory] = useState([]);
@@ -11,24 +12,38 @@ export default function History() {
 
   const { isLoaded, isSignedIn, user } = useUser();
   const { getToken } = useAuth();
+  const { signOut } = useClerk();  // For sign out button
 
   useEffect(() => {
-    if (isLoaded && isSignedIn) fetchHistory();
+    if (isLoaded && isSignedIn) {
+      fetchHistory();
+    }
   }, [isLoaded, isSignedIn]);
 
   const fetchHistory = async () => {
     if (!isSignedIn) {
-      Alert.alert('Please log in to view history.');
+      Alert.alert('Error', 'Please log in to view history.');
       return;
     }
+
     try {
       const token = await getToken();
+      if (!token) {
+        Alert.alert('Error', 'Authentication failed. Please log in again.');
+        return;
+      }
+
       const { data } = await axios.get(`${API_BASE}/api/history`, {
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
+
+      console.log('Fetched history:', data);
       setHistory(data);
     } catch (error) {
-      Alert.alert('Failed to load history. Please try again.');
+      console.error('Fetch error:', error.response || error);
+      Alert.alert('Error', 'Failed to load history. Please try again.');
     }
   };
 
@@ -38,67 +53,75 @@ export default function History() {
   };
 
   const renderItem = ({ item }) => (
-    <View style={[styles.card, item.result === 'Safe' ? styles.safeCard : styles.unsafeCard]}>
-      <Text style={styles.linkText}>Link: {item.link}</Text>
-      <Text style={[styles.resultText, item.result === 'Safe' ? styles.safeText : styles.unsafeText]}>
+    <View style={[styles.item, { backgroundColor: item.result === 'Safe' ? '#E8F5E8' : '#FFE8E8' }]}>
+      <Text style={styles.link}>Link: {item.link}</Text>
+      <Text style={[styles.result, { color: item.result === 'Safe' ? '#34C759' : '#FF3B30' }]}>
         Result: {item.result}
       </Text>
-      <Text style={styles.timestampText}>
-        Checked: {new Date(item.created_at).toLocaleString()}
+      <Text style={styles.timestamp}>
+        Checked: {new Date(item.timestamp).toLocaleString()}
       </Text>
     </View>
   );
 
-  if (!isLoaded) return <Text style={styles.emptyText}>Loading...</Text>;
-  if (!isSignedIn) return <Text style={styles.emptyText}>Please log in to view history</Text>;
+  if (!isLoaded) {
+    return <Text style={styles.empty}>Loading...</Text>;
+  }
+
+  if (!isSignedIn) {
+    return <Text style={styles.empty}>Please log in to view history</Text>;
+  }
 
   return (
-    <FlatList
-      style={styles.container}
-      data={history}
-      renderItem={renderItem}
-      keyExtractor={item => item.id.toString()}
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-      contentContainerStyle={{ paddingBottom: 20 }}
-      showsVerticalScrollIndicator={false}
-      ListEmptyComponent={<Text style={styles.emptyText}>No history yet. Check some links!</Text>}
-    />
+    <View style={styles.container}>
+      {isLoaded && user && (
+        <Text style={styles.welcome}>
+          Welcome back, {user.primaryEmailAddress?.emailAddress || 'User'}! 👋
+        </Text>
+      )}
+
+      <Text style={styles.title}>Check History</Text>
+
+      <FlatList
+        data={history}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        showsVerticalScrollIndicator={false}
+      />
+
+      {history.length === 0 && (
+        <Text style={styles.empty}>No history yet. Check some links to get started!</Text>
+      )}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#f8f9fa',
-    flex: 1,
-    padding: 15,
+  container: { flex: 1, padding: 20, backgroundColor: '#f8f9fa' },
+  welcome: { fontSize: 22, fontWeight: 'bold', color: '#007AFF', textAlign: 'center', marginBottom: 10 },
+  signOutButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: '#FF3B30',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    zIndex: 1,
   },
-  card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+  signOutText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
-  safeCard: {
-    borderLeftWidth: 6,
-    borderLeftColor: '#34C759',
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#007AFF' },
+  item: { 
+    padding: 15, marginBottom: 10, borderRadius: 10, 
+    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 5, elevation: 3 
   },
-  unsafeCard: {
-    borderLeftWidth: 6,
-    borderLeftColor: '#FF3B30',
-  },
-  linkText: { fontWeight: '600', fontSize: 16 },
-  resultText: { fontWeight: '700', fontSize: 16, marginTop: 6 },
-  safeText: { color: '#34C759' },
-  unsafeText: { color: '#FF3B30' },
-  timestampText: { fontSize: 14, color: '#666', marginTop: 6 },
-  emptyText: {
-    fontSize: 16,
-    color: '#8E8E93',
-    textAlign: 'center',
-    marginTop: 50,
-  },
+  link: { fontSize: 16, fontWeight: '500' },
+  result: { fontSize: 16, fontWeight: 'bold', marginTop: 5 },
+  timestamp: { fontSize: 14, color: '#666', marginTop: 5 },
+  empty: { textAlign: 'center', fontSize: 16, color: '#8E8E93', marginTop: 50 },
 });
