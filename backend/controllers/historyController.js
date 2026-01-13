@@ -1,25 +1,10 @@
 import { sql } from "../config/db.js";
-import { verifyToken } from "@clerk/clerk-sdk-node";
-
-async function getUserIdFromToken(authHeader) {
-  if (!authHeader) return null;
-  const token = authHeader.replace('Bearer ', '');
-  try {
-    const jwtPayload = await verifyToken(token, {
-      jwtKey: process.env.CLERK_JWT_KEY,  // Use env var here
-    });
-    return jwtPayload.sub;  // user ID from token
-  } catch (error) {
-    console.error('Token verification failed:', error);
-    return null;
-  }
-}
 
 export async function getHistory(req, res) {
   try {
-    const user_id = await getUserIdFromToken(req.headers.authorization);
-    if (!user_id) return res.status(401).json({ message: "Unauthorized" });
-
+    // Authentication disabled - using dummy user ID for testing
+    const user_id = '123';  
+    
     const historyvalue = await sql`
       SELECT * FROM history WHERE user_id = ${user_id} ORDER BY created_at DESC
     `;
@@ -32,8 +17,8 @@ export async function getHistory(req, res) {
 
 export async function createLinkHistory(req, res) {
   try {
-    const user_id = await getUserIdFromToken(req.headers.authorization);
-    if (!user_id) return res.status(401).json({ message: "Unauthorized" });
+    // Authentication disabled - using dummy user ID for testing
+    const user_id = '123';  
 
     const { link, result } = req.body;
     if (!link || !result) return res.status(400).json({ message: "Link and result are required" });

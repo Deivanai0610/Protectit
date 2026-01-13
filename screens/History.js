@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, FlatList, RefreshControl } from 'react-native';
 import axios from 'axios';
 import { useUser, useAuth } from '@clerk/clerk-expo';
-import { colors, commonStyles as styles } from '../styles/commonStyles';
+import { colors, commonStyles as styles } from '../mobile/styles/commonStyles';
 
 const API_BASE = 'https://protectit-backend-devis-projects-d516985b.vercel.app';
 
@@ -22,7 +22,7 @@ export default function History() {
     try {
       const token = await getToken();   // <-- Add this debug line below
       console.log('Token:', token);     // Log token to console for verification
-      
+
       const { data } = await axios.get(`${API_BASE}/api/history`, {
         headers: { Authorization: `Bearer ${token}` },
       });

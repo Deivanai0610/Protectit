@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { useUser } from '@clerk/clerk-expo';
-import { colors, commonStyles as styles } from '../styles/commonStyles';
+import { colors, commonStyles as styles } from '../mobile/styles/commonStyles';
 
 const GEMINI_API_KEY = 'AIzaSyAXZGFe_2aru6DdssjVE96Rz9ksHrEpBpg';
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
