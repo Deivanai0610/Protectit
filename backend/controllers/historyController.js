@@ -3,14 +3,14 @@ import { verifyToken } from "@clerk/clerk-sdk-node";
 
 async function getUserIdFromToken(authHeader) {
   if (!authHeader) return null;
-  const token = authHeader.replace("Bearer ", "");
+  const token = authHeader.replace('Bearer ', '');
   try {
     const jwtPayload = await verifyToken(token, {
-      jwtKey: process.env.CLERK_JWT_KEY,
+      jwtKey: process.env.CLERK_JWT_KEY,  // Use env var here
     });
-    return jwtPayload.sub; // User ID
+    return jwtPayload.sub;  // user ID from token
   } catch (error) {
-    console.error("Token verification failed:", error);
+    console.error('Token verification failed:', error);
     return null;
   }
 }

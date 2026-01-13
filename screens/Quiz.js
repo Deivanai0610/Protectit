@@ -102,23 +102,21 @@ export default function Quiz() {
   };
 
   // New: function to send quiz score email to user
-  const sendScoreEmail = async (finalScore, totalQuestions, email) => {
-    if (!email) return;
-    try {
-      const response = await fetch('https://protectit-backend-devis-projects-d516985b.vercel.app/api/send-score-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, score: finalScore, total: totalQuestions }),
-      });
-      const data = await response.json();
-      if (!data.success) {
-        Alert.alert('Failed to send congratulations email.');
-      }
-    } catch (error) {
-      Alert.alert('Error sending email.');
-      console.error('Email send error:', error);
+const sendScoreEmail = async (score, total, email) => {
+  try {
+    const response = await fetch('https://protectit-backend-devis-projects-d516985b.vercel.app/api/send-score-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, score, total }),
+    });
+    const data = await response.json();
+    if (!data.success) {
+      Alert.alert('Failed to send congratulations email.');
     }
-  };
+  } catch (error) {
+    Alert.alert('Error sending email.');
+  }
+};
 
   const handleAnswer = (index) => {
     setSelectedAnswer(index);
@@ -139,7 +137,7 @@ export default function Quiz() {
       setShowResult(true);
       saveHighScore(finalScore);
       if (user?.primaryEmailAddress?.emailAddress) {
-        sendScoreEmail(finalScore, questions.length, user.primaryEmailAddress.emailAddress);
+        sendScoreEmail(finalScore, questions.length, user.primaryEmailAddress?.emailAddress);
       }
     }
   };

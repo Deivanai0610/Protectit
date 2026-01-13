@@ -1,15 +1,18 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+
+console.log('CLERK_JWT_KEY:', process.env.CLERK_JWT_KEY?.substring(0, 30));
+
+import express from "express";
 import postgres from "postgres";
 import { initDB } from "./config/db.js";
 import emailRoute from './routes/emailRoute.js';
 import historyRoute from "./routes/historyRoute.js";
 
+const app = express();   
+
 app.use('/api/send-score-email', emailRoute);
 
-dotenv.config();
-
-const app = express();                     // <- app creation must be before usage
 const sql = postgres(process.env.DB_URL);
 
 const PORT = process.env.PORT || 3000;
@@ -26,5 +29,11 @@ app.use((req, res, next) => {
 app.use("/api/history", historyRoute);
 
 await initDB();  // initialize DB connection once at module load time
+
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(process.env.PORT || 3000, () => {
+    console.log('Server listening on port', process.env.PORT || 3000);
+  });
+}
 
 export default app;  // export the express app as the serverless handler

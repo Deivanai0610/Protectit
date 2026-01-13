@@ -20,7 +20,9 @@ export default function History() {
   const fetchHistory = async () => {
     if (!isSignedIn) return;
     try {
-      const token = await getToken();
+      const token = await getToken();   // <-- Add this debug line below
+      console.log('Token:', token);     // Log token to console for verification
+      
       const { data } = await axios.get(`${API_BASE}/api/history`, {
         headers: { Authorization: `Bearer ${token}` },
       });

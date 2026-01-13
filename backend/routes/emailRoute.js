@@ -11,19 +11,25 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// No token verification here — accept email & score from request body
 router.post('/', async (req, res) => {
   const { email, score, total } = req.body;
+
+  if (!email || !score || !total) {
+    return res.status(400).json({ success: false, message: 'Missing email or score values' });
+  }
+
   try {
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
       to: email,
-      subject: 'Quiz Score - Congratulations!',
-      text: `Congrats! You scored ${score} out of ${total} in the phishing quiz! 🎉`,
+      subject: 'Congratulations on Your Quiz Score!',
+      text: `Congrats! You scored ${score} out of ${total} in the phishing quiz. Keep up the great work!`,
     });
     res.json({ success: true });
-  } catch (err) {
-    console.error("Email error:", err);
-    res.status(500).json({ success: false });
+  } catch (error) {
+    console.error('Email send error:', error);
+    res.status(500).json({ success: false, message: 'Failed to send email' });
   }
 });
 
