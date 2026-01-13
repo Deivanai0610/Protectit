@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet, ScrollView } from 'react-native';
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { useUser, useClerk } from '@clerk/clerk-expo';  // Added useClerk
+import { useUser, useClerk } from '@clerk/clerk-expo';
 
 const GEMINI_API_KEY = 'AIzaSyAXZGFe_2aru6DdssjVE96Rz9ksHrEpBpg';
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
@@ -27,14 +27,12 @@ export default function PrivacySummarizer() {
       Alert.alert('Success', 'Summary generated!');
     } catch (error) {
       Alert.alert('Error', 'Failed to summarize. Check internet or API key.');
-      console.error(error);
     }
     setLoading(false);
   };
 
   return (
     <ScrollView style={styles.container}>
-      {/* Welcome Message */}
       {isLoaded && user && (
         <Text style={styles.welcome}>
           Welcome back, {user.primaryEmailAddress?.emailAddress || 'User'}! 👋
@@ -50,6 +48,7 @@ export default function PrivacySummarizer() {
         onChangeText={setPolicy}
         multiline
         editable={!loading}
+        numberOfLines={8}
       />
 
       <TouchableOpacity
@@ -57,15 +56,13 @@ export default function PrivacySummarizer() {
         onPress={summarizePolicy}
         disabled={loading}
       >
-        <Text style={styles.buttonText}>
-          {loading ? 'Summarizing...' : 'Get Summary'}
-        </Text>
+        <Text style={styles.buttonText}>{loading ? 'Summarizing...' : 'Get Summary'}</Text>
       </TouchableOpacity>
 
       {summary ? (
         <View style={styles.summaryCard}>
           <Text style={styles.summaryTitle}>Key Summary Points:</Text>
-          <Text style={styles.summary}>{summary}</Text>
+          <Text style={styles.summaryText}>{summary}</Text>
         </View>
       ) : null}
     </ScrollView>
@@ -74,27 +71,7 @@ export default function PrivacySummarizer() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#f8f9fa' },
-  welcome: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#007AFF',
-    textAlign: 'center',
-    marginBottom: 10,
-  },
-  signOutButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: '#FF3B30',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    zIndex: 1,
-  },
-  signOutText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
+  welcome: { fontSize: 22, fontWeight: 'bold', color: '#007AFF', textAlign: 'center', marginBottom: 10 },
   title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#007AFF' },
   input: {
     borderWidth: 1,
@@ -104,11 +81,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     fontSize: 16,
     marginBottom: 15,
-    height: 150,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
+    textAlignVertical: 'top',
   },
   button: {
     backgroundColor: '#007AFF',
@@ -123,15 +100,15 @@ const styles = StyleSheet.create({
   disabled: { backgroundColor: '#ccc' },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
   summaryCard: {
-    padding: 15,
-    borderRadius: 10,
-    marginTop: 15,
     backgroundColor: '#f0f8ff',
+    borderRadius: 10,
+    padding: 15,
+    marginTop: 15,
     shadowColor: '#000',
     shadowOpacity: 0.1,
     shadowRadius: 5,
     elevation: 3,
   },
   summaryTitle: { fontSize: 18, fontWeight: 'bold', marginBottom: 10, color: '#007AFF' },
-  summary: { fontSize: 16, lineHeight: 24, color: '#333' },
+  summaryText: { fontSize: 16, lineHeight: 24, color: '#333' },
 });

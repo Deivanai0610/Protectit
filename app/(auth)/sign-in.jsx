@@ -1,27 +1,11 @@
 import { useSignIn } from '@clerk/clerk-expo';
-import { useNavigation } from '@react-navigation/native';  // ← React Navigation
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import React from 'react';
 
-function SignInScreen() {
+export default function SignInScreen() {
   const navigation = useNavigation();
-
-  return (
-    <View>
-      {/* Your sign-in form */}
-
-      <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
-        <Text style={{ color: '#007AFF', textAlign: 'center', marginTop: 20 }}>
-          Don't have an account? Sign Up
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-export default function Page() {
   const { signIn, setActive, isLoaded } = useSignIn();
-  const navigation = useNavigation();  // ← For navigating to SignUp
 
   const [emailAddress, setEmailAddress] = React.useState('');
   const [password, setPassword] = React.useState('');
@@ -34,16 +18,13 @@ export default function Page() {
         identifier: emailAddress,
         password,
       });
-
       if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId });
-        // No router — just let the parent App.js handle tab visibility
-        // User is now logged in → SignIn/SignUp tabs will disappear if you add the conditional (see below)
       } else {
-        console.error(JSON.stringify(signInAttempt, null, 2));
+        Alert.alert('Sign-in incomplete', 'Please try again.');
       }
-    } catch (err) {
-      console.error(JSON.stringify(err, null, 2));
+    } catch (error) {
+      Alert.alert('Error signing in', 'Check your credentials and try again.');
     }
   };
 
@@ -56,14 +37,14 @@ export default function Page() {
         value={emailAddress}
         placeholder="Email address"
         onChangeText={setEmailAddress}
-        style={{ borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10, borderRadius: 8 }}
         keyboardType="email-address"
+        style={{ borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10, borderRadius: 8 }}
       />
 
       <TextInput
         value={password}
         placeholder="Password"
-        secureTextEntry={true}
+        secureTextEntry
         onChangeText={setPassword}
         style={{ borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 20, borderRadius: 8 }}
       />

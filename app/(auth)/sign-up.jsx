@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Alert, StyleSheet } from 'react-native';
 import { useSignUp } from '@clerk/clerk-expo';
-import { useNavigation } from '@react-navigation/native';  // ← React Navigation
+import { useNavigation } from '@react-navigation/native';
 
 export default function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -20,8 +20,7 @@ export default function SignUpScreen() {
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
       setPendingVerification(true);
     } catch (err) {
-      console.error(JSON.stringify(err, null, 2));
-      Alert.alert('Error', 'Sign up failed. Please try again.');
+      Alert.alert('Sign up failed', 'Please try again.');
     }
   };
 
@@ -30,21 +29,18 @@ export default function SignUpScreen() {
 
     try {
       const completeSignUp = await signUp.attemptEmailAddressVerification({ code });
-
       if (completeSignUp.status === 'complete') {
         await setActive({ session: completeSignUp.createdSessionId });
         Alert.alert('Success', 'Account created! You are now signed in.');
-        // No router.replace — parent will update
       } else {
-        console.error(JSON.stringify(completeSignUp, null, 2));
+        Alert.alert('Verification incomplete', 'Please try again.');
       }
     } catch (err) {
       const isAlreadySignedIn = err?.errors?.some(e => e.code === 'session_exists');
       if (isAlreadySignedIn) {
-        Alert.alert('Success', 'You are already signed in.');
+        Alert.alert('Already signed in', 'You are already signed in.');
       } else {
-        console.error(JSON.stringify(err, null, 2));
-        Alert.alert('Error', 'Verification failed.');
+        Alert.alert('Verification failed', 'Please try again.');
       }
     }
   };
@@ -53,6 +49,7 @@ export default function SignUpScreen() {
     return (
       <View style={{ padding: 20 }}>
         <Text style={{ fontSize: 20, marginBottom: 20 }}>Verify your email</Text>
+
         <TextInput
           value={code}
           placeholder="Enter verification code"
@@ -60,6 +57,7 @@ export default function SignUpScreen() {
           keyboardType="number-pad"
           style={{ borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 20, borderRadius: 8 }}
         />
+
         <TouchableOpacity
           onPress={onVerifyPress}
           style={{ backgroundColor: '#007AFF', padding: 15, borderRadius: 8, alignItems: 'center' }}
@@ -79,14 +77,14 @@ export default function SignUpScreen() {
         value={emailAddress}
         placeholder="Email address"
         onChangeText={setEmailAddress}
-        style={{ borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10, borderRadius: 8 }}
         keyboardType="email-address"
+        style={{ borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 10, borderRadius: 8 }}
       />
 
       <TextInput
         value={password}
         placeholder="Password"
-        secureTextEntry={true}
+        secureTextEntry
         onChangeText={setPassword}
         style={{ borderWidth: 1, borderColor: '#ccc', padding: 10, marginBottom: 20, borderRadius: 8 }}
       />

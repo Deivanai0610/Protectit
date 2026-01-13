@@ -106,12 +106,10 @@ export default function Quiz() {
     const isCorrect = index === questions[current].correct;
     if (isCorrect) setScore(score + 1);
 
-    const feedbackTitle = isCorrect ? 'Correct!' : 'Incorrect!';
-    const feedbackMessage = isCorrect ? 'Good job!' : questions[current].explanation;
     Alert.alert(
-      feedbackTitle,
-      feedbackMessage,
-      [{ text: 'Next', onPress: () => nextQuestion() }]
+      isCorrect ? 'Correct!' : 'Incorrect!',
+      isCorrect ? 'Good job!' : questions[current].explanation,
+      [{ text: 'Next', onPress: nextQuestion }]
     );
   };
 
@@ -138,7 +136,6 @@ export default function Quiz() {
   if (showResult) {
     return (
       <View style={styles.container}>
-        {/* Welcome Message */}
         {isLoaded && user && (
           <Text style={styles.welcome}>
             Welcome back, {user.primaryEmailAddress?.emailAddress || 'User'}! 👋
@@ -146,10 +143,12 @@ export default function Quiz() {
         )}
 
         <Text style={styles.title}>Quiz Complete!</Text>
-        <Text style={styles.score}>Your Score: {score}/{questions.length}</Text>
-        <Text style={styles.highScore}>High Score: {highScore}/{questions.length}</Text>
+        <Text style={styles.score}>Your Score: {score} / {questions.length}</Text>
+        <Text style={styles.highScore}>High Score: {highScore} / {questions.length}</Text>
         <Text style={styles.feedback}>
-          {score / questions.length > 0.7 ? 'Excellent! You\'re well-prepared against phishing.' : 'Good effort! Review the explanations to learn more.'}
+          {score / questions.length > 0.7
+            ? "Excellent! You're well-prepared against phishing."
+            : 'Good effort! Review the explanations to learn more.'}
         </Text>
         <TouchableOpacity style={styles.button} onPress={resetQuiz}>
           <Text style={styles.buttonText}>Restart Quiz</Text>
@@ -160,7 +159,6 @@ export default function Quiz() {
 
   return (
     <View style={styles.container}>
-      {/* Welcome Message */}
       {isLoaded && user && (
         <Text style={styles.welcome}>
           Welcome back, {user.primaryEmailAddress?.emailAddress || 'User'}! 👋
@@ -169,69 +167,64 @@ export default function Quiz() {
 
       <Text style={styles.progress}>Question {current + 1} / {questions.length}</Text>
       <Text style={styles.question}>{question.question}</Text>
-      <View style={styles.options}>
-        {question.options.map((option, index) => (
-          <TouchableOpacity
-            key={index}
+
+      {question.options.map((option, index) => (
+        <TouchableOpacity
+          key={index}
+          style={[
+            styles.option,
+            selectedAnswer !== null && index === selectedAnswer && styles.selectedOption,
+            selectedAnswer !== null && index === question.correct && styles.correctOption,
+          ]}
+          onPress={() => selectedAnswer === null && handleAnswer(index)}
+          disabled={selectedAnswer !== null}
+        >
+          <Text
             style={[
-              styles.option,
-              selectedAnswer !== null && index === selectedAnswer && styles.selectedOption,
-              selectedAnswer !== null && index === question.correct && styles.correctOption
-            ]}
-            onPress={() => selectedAnswer === null && handleAnswer(index)}
-            disabled={selectedAnswer !== null}
-          >
-            <Text style={[
               styles.optionText,
               selectedAnswer !== null && index === selectedAnswer && { fontWeight: 'bold' },
-              selectedAnswer !== null && index === question.correct && { color: '#34C759' }
-            ]}>
-              {option}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+              selectedAnswer !== null && index === question.correct && { color: '#34C759' },
+            ]}
+          >
+            {option}
+          </Text>
+        </TouchableOpacity>
+      ))}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#f8f9fa', justifyContent: 'center' },
-  welcome: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#007AFF',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  signOutButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: '#FF3B30',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    zIndex: 1,
-  },
-  signOutText: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
+  welcome: { fontSize: 22, fontWeight: 'bold', color: '#007AFF', textAlign: 'center', marginBottom: 20 },
   title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', color: '#007AFF', marginBottom: 20 },
-  progress: { fontSize: 16, textAlign: 'center', marginBottom: 20, color: '#666' },
-  question: { fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#333' },
-  options: { flex: 1 },
-  option: { 
-    padding: 15, marginBottom: 10, backgroundColor: '#fff', borderRadius: 10, 
-    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 5, elevation: 3 
-  },
-  selectedOption: { backgroundColor: '#E8F5E8' },
-  correctOption: { backgroundColor: '#E8F5E8', borderWidth: 2, borderColor: '#34C759' },
-  optionText: { fontSize: 16, color: '#333' },
   score: { fontSize: 20, fontWeight: 'bold', textAlign: 'center', marginBottom: 10, color: '#007AFF' },
   highScore: { fontSize: 18, textAlign: 'center', marginBottom: 20, color: '#666' },
   feedback: { fontSize: 16, textAlign: 'center', marginBottom: 30, color: '#333' },
-  button: { backgroundColor: '#007AFF', padding: 15, borderRadius: 10, alignItems: 'center', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 5, elevation: 3 },
+  progress: { fontSize: 16, textAlign: 'center', marginBottom: 20, color: '#666' },
+  question: { fontSize: 18, fontWeight: 'bold', marginBottom: 20, textAlign: 'center', color: '#333' },
+  option: {
+    backgroundColor: '#fff',
+    padding: 15,
+    marginBottom: 10,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
+  },
+  selectedOption: { backgroundColor: '#E8F5E8' },
+  correctOption: { backgroundColor: '#E8F5E8', borderColor: '#34C759', borderWidth: 2 },
+  optionText: { fontSize: 16, color: '#333' },
+  button: {
+    backgroundColor: '#007AFF',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 3,
+  },
   buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
 });
