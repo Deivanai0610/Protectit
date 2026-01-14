@@ -4,12 +4,12 @@ import { StatusBar } from 'expo-status-bar';
 import { Text, TouchableOpacity } from 'react-native';
 import { ClerkProvider, useUser, useClerk } from '@clerk/clerk-expo';
 import * as SecureStore from 'expo-secure-store';
-import PhishingChecker from './screens/PhishingChecker';
-import History from './screens/History';
-import Quiz from './screens/Quiz';
-import PrivacySummarizer from './screens/PrivacySummarizer';
-import SignIn from './app/(auth)/sign-in';
-import SignUp from './app/(auth)/sign-up';
+import PhishingChecker from './mobile/screens/PhishingChecker';
+import History from './mobile/screens/History';
+import Quiz from './mobile/screens/Quiz';
+import PrivacySummarizer from './mobile/screens/PrivacySummarizer';
+import SignIn from './mobile/app/(auth)/sign-in';
+import SignUp from './mobile/app/(auth)/sign-up';
 
 const Tab = createBottomTabNavigator();
 
