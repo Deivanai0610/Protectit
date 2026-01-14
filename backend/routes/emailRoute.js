@@ -21,8 +21,8 @@ const transporter = nodemailer.createTransport({
 
 //replacethis later
 router.post('/', express.json(), async (req, res) => {
-  console.log("Received email data:", req.body);
-  return res.status(200).json({ success: true });
+  console.log("Received send-score-email request body:", req.body);
+  res.status(200).json({ success: true });
 });
 
 // Temporarily commenting this email sender
