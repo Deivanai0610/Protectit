@@ -10,12 +10,12 @@
     "@clerk/clerk-sdk-node": "^4.13.23",
     "@neondatabase/serverless": "^1.0.0",
     "cors": "^2.8.5",
-    "dotenv": "^16.5.0",
+    "dotenv": "^16.6.1",
     "expo": "^54.0.30",
-    "express": "^4.21.0",
+    "express": "^4.22.1",
     "nodemailer": "^7.0.12",
     "pg": "^8.11.3",
-    "postgres": "^3.4.7"
+    "postgres": "^3.4.8"
   },
   "repository": {
     "type": "git",

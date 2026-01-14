@@ -13,6 +13,11 @@ const app = express();
 
 app.use('/api/send-score-email', emailRoute);
 
+// Add ping route here, before other routes:
+app.get("/api/ping", (req, res) => {
+  res.status(200).json({ ok: true });
+});
+
 const sql = postgres(process.env.DB_URL);
 
 const PORT = process.env.PORT || 3000;
