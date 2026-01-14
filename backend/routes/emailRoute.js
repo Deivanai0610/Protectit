@@ -5,28 +5,14 @@ const router = express.Router();
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
-  auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 10000,
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
 });
 
-//const transporter = nodemailer.createTransport({
-//  service: 'gmail',
- // auth: {
-  //  user: process.env.EMAIL_USER,
-  //  pass: process.env.EMAIL_PASS,
- // },
-//});
 
-//replacethis later
-router.post('/', express.json(), async (req, res) => {
-  console.log("Received send-score-email request body:", req.body);
-  res.status(200).json({ success: true });
-});
-
-// Temporarily commenting this email sender
-/* router.post('/', async (req, res) => {
+router.post('/', async (req, res) => {
   const { email, score, total } = req.body;
 
   if (!email || !score || !total) {
@@ -46,5 +32,5 @@ router.post('/', express.json(), async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to send email' });
   }
 });
-*/
+
 export default router;
