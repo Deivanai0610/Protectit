@@ -16,4 +16,6 @@ backend/.env
 Thumbs.db
 
 .env
+.env.local
+.env.*
 .expo/
